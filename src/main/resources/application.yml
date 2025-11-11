@@ -1,0 +1,26 @@
+spring:
+  ai:
+    google:
+      genai:
+        api-key: AIzaSyDCEGoOjR5A9omcGVSxSOYRKMjHMBz0x4Y
+    mcp:
+      client:
+        enabled: true
+        name: ledger-mcp-client
+        version: 1.0.0
+        request-timeout: 20s
+        streamable-http:
+          connections:
+            db-server:
+              url: http://localhost:9432
+              endpoint: /mcp
+# 日志配置，用于调试WebSocket连接
+logging:
+  level:
+    org:
+      springframework:
+        web:
+          socket: TRACE
+        messaging:
+          simp:
+            stomp: TRACE

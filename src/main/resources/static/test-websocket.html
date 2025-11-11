@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket 连接测试</title>
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+</head>
+<body>
+    <h1>WebSocket 连接测试</h1>
+    <div id="status">状态: 未连接</div>
+    <button onclick="connect()">连接</button>
+    <button onclick="disconnect()">断开</button>
+    <div id="log" style="margin-top: 20px; border: 1px solid #ccc; padding: 10px; max-height: 400px; overflow-y: auto;"></div>
+
+    <script>
+        let stompClient = null;
+
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${time}] ${message}<br>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+
+        function connect() {
+            const socket = new WebSocket('ws://10.0.2.2:8080/ws');
+            stompClient = new StompJs.Client({
+                webSocketFactory: () => socket,
+                connectHeaders: {},
+                debug: (str) => {
+                    log('DEBUG: ' + str);
+                },
+                reconnectDelay: 5000,
+                heartbeatIncoming: 4000,
+                heartbeatOutgoing: 4000
+            });
+
+            stompClient.onConnect = (frame) => {
+                log('✅ 连接成功!');
+                document.getElementById('status').innerText = '状态: 已连接';
+                
+                // 订阅消息
+                stompClient.subscribe('/queue/messages/test-user', (message) => {
+                    log('📨 收到消息: ' + message.body);
+                });
+                
+                log('📡 已订阅 /queue/messages/test-user');
+            };
+
+            stompClient.onStompError = (frame) => {
+                log('❌ STOMP错误: ' + frame.headers['message']);
+                log('详细信息: ' + frame.body);
+            };
+
+            stompClient.onWebSocketClose = (event) => {
+                log('🔌 WebSocket连接关闭');
+                document.getElementById('status').innerText = '状态: 已断开';
+            };
+
+            stompClient.onWebSocketError = (event) => {
+                log('❌ WebSocket错误');
+            };
+
+            log('🔌 开始连接到 ws://10.0.2.2:8080/ws ...');
+            stompClient.activate();
+        }
+
+        function disconnect() {
+            if (stompClient !== null) {
+                stompClient.deactivate();
+                log('断开连接');
+                document.getElementById('status').innerText = '状态: 已断开';
+            }
+        }
+
+        // 页面加载后自动连接
+        window.onload = () => {
+            log('页面加载完成，准备测试连接');
+        };
+    </script>
+</body>
+</html>
