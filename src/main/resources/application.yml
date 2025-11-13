@@ -2,7 +2,7 @@ spring:
   ai:
     google:
       genai:
-        api-key: AIzaSyDCEGoOjR5A9omcGVSxSOYRKMjHMBz0x4Y
+        api-key: 
     mcp:
       client:
         enabled: true
